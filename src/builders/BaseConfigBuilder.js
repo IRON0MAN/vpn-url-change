@@ -1,10 +1,10 @@
 import { ProxyParser } from '../parsers/index.js';
-import { deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
+import { checkStartsWith, deepCopy, tryDecodeSubscriptionLines, decodeBase64 } from '../utils.js';
 import { createTranslator } from '../i18n/index.js';
 import { generateRules, getOutbounds, PREDEFINED_RULE_SETS } from '../config/index.js';
 
 export class BaseConfigBuilder {
-    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false) {
+    constructor(inputString, baseConfig, lang, userAgent, groupByCountry = false, nodeNamePrefix = '') {
         this.inputString = inputString;
         this.config = deepCopy(baseConfig);
         this.customRules = [];
@@ -14,6 +14,7 @@ export class BaseConfigBuilder {
         this.appliedOverrideKeys = new Set();
         this.groupByCountry = groupByCountry;
         this.providerUrls = [];  // URLs to use as providers (auto-sync)
+        this.nodeNamePrefix = this.normalizeNodeNamePrefix(nodeNamePrefix);
     }
 
     async build() {
@@ -313,7 +314,8 @@ export class BaseConfigBuilder {
         const validItems = customItems.filter(item => item != null);
         validItems.forEach(item => {
             if (item?.tag) {
-                const convertedProxy = this.convertProxy(item);
+                const prefixed = this.applyNodeNamePrefix(item);
+                const convertedProxy = this.convertProxy(prefixed);
                 if (convertedProxy) {
                     this.addProxyToConfig(convertedProxy);
                 }
@@ -355,5 +357,55 @@ export class BaseConfigBuilder {
 
     formatConfig() {
         throw new Error('formatConfig must be implemented in child class');
+    }
+
+    normalizeNodeNamePrefix(prefix) {
+        if (prefix === undefined || prefix === null) {
+            return '';
+        }
+        return String(prefix);
+    }
+
+    prefixProxyName(name) {
+        if (!this.nodeNamePrefix || typeof name !== 'string' || name === '') {
+            return name;
+        }
+        if (checkStartsWith(name, this.nodeNamePrefix)) {
+            return name;
+        }
+        return `${this.nodeNamePrefix}${name}`;
+    }
+
+    applyNodeNamePrefix(proxy) {
+        if (!this.nodeNamePrefix || !proxy || typeof proxy !== 'object') {
+            return proxy;
+        }
+        if (typeof proxy.tag === 'string' && proxy.tag !== '') {
+            const next = this.prefixProxyName(proxy.tag);
+            if (next !== proxy.tag) {
+                return { ...proxy, tag: next };
+            }
+        }
+        if (typeof proxy.name === 'string' && proxy.name !== '') {
+            const next = this.prefixProxyName(proxy.name);
+            if (next !== proxy.name) {
+                return { ...proxy, name: next };
+            }
+        }
+        return proxy;
+    }
+
+    resolveProxyRefWithPrefix(name, proxyList) {
+        if (!this.nodeNamePrefix || typeof name !== 'string') {
+            return name;
+        }
+        if (Array.isArray(proxyList) && proxyList.includes(name)) {
+            return name;
+        }
+        const prefixed = this.prefixProxyName(name);
+        if (Array.isArray(proxyList) && proxyList.includes(prefixed)) {
+            return prefixed;
+        }
+        return name;
     }
 }

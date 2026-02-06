@@ -8,11 +8,11 @@ import { emitClashRules, sanitizeClashProxyGroups } from './helpers/clashConfigU
 import { normalizeGroupName, findGroupIndexByName } from './helpers/groupNameUtils.js';
 
 export class ClashConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, nodeNamePrefix = '', groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl) {
         if (!baseConfig) {
             baseConfig = CLASH_CONFIG;
         }
-        super(inputString, baseConfig, lang, userAgent, groupByCountry);
+        super(inputString, baseConfig, lang, userAgent, groupByCountry, nodeNamePrefix);
         this.selectedRules = selectedRules;
         this.customRules = customRules;
         this.countryGroupNames = [];
@@ -483,7 +483,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
                 // Merge 'proxies' field - validate references first
                 if (Array.isArray(userGroup.proxies)) {
-                    const validUserProxies = userGroup.proxies.filter(p => validRefs.has(p));
+                    const normalizedProxies = userGroup.proxies.map(p => this.resolveProxyRefWithPrefix(p, proxyList));
+                    const validUserProxies = normalizedProxies.filter(p => validRefs.has(p));
                     existing.proxies = [...new Set([
                         ...(existing.proxies || []),
                         ...validUserProxies
@@ -500,7 +501,8 @@ export class ClashConfigBuilder extends BaseConfigBuilder {
 
                 // Validate proxies references
                 if (Array.isArray(newGroup.proxies)) {
-                    newGroup.proxies = newGroup.proxies.filter(p => validRefs.has(p));
+                    const normalizedProxies = newGroup.proxies.map(p => this.resolveProxyRefWithPrefix(p, proxyList));
+                    newGroup.proxies = normalizedProxies.filter(p => validRefs.has(p));
                 }
 
                 // Validate use (provider) references

@@ -181,6 +181,16 @@ export const Form = (props) => {
                 </div>
               </label>
 
+              <div>
+                <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">{t('nodeNamePrefix')}</label>
+                <input
+                  type="text"
+                  x-model="nodeNamePrefix"
+                  class="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary-500 focus:border-transparent"
+                  placeholder={t('nodeNamePrefixPlaceholder')}
+                />
+              </div>
+
               <div
                 x-show="enableClashUI"
                 {...{

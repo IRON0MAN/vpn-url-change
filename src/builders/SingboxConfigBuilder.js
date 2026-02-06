@@ -7,9 +7,9 @@ import { buildSelectorMembers as buildSelectorMemberList, buildNodeSelectMembers
 import { normalizeGroupName } from './helpers/groupNameUtils.js';
 
 export class SingboxConfigBuilder extends BaseConfigBuilder {
-    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12') {
+    constructor(inputString, selectedRules, customRules, baseConfig, lang, userAgent, nodeNamePrefix = '', groupByCountry = false, enableClashUI = false, externalController, externalUiDownloadUrl, singboxVersion = '1.12') {
         const resolvedBaseConfig = baseConfig ?? SING_BOX_CONFIG;
-        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry);
+        super(inputString, resolvedBaseConfig, lang, userAgent, groupByCountry, nodeNamePrefix);
 
         this.selectedRules = selectedRules;
         this.customRules = customRules;
@@ -342,7 +342,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
                 // Merge 'outbounds' field (equivalent to Clash 'proxies')
                 if (Array.isArray(userGroup.proxies) && userGroup.proxies.length > 0) {
-                    const validUserOutbounds = userGroup.proxies.filter(p => validRefs.has(p));
+                    const normalizedProxies = userGroup.proxies.map(p => this.resolveProxyRefWithPrefix(p, proxyList));
+                    const validUserOutbounds = normalizedProxies.filter(p => validRefs.has(p));
                     existing.outbounds = [...new Set([
                         ...(existing.outbounds || []),
                         ...validUserOutbounds
@@ -363,7 +364,8 @@ export class SingboxConfigBuilder extends BaseConfigBuilder {
 
                 // Validate outbounds references
                 if (Array.isArray(userGroup.proxies)) {
-                    newOutbound.outbounds = userGroup.proxies.filter(p => validRefs.has(p));
+                    const normalizedProxies = userGroup.proxies.map(p => this.resolveProxyRefWithPrefix(p, proxyList));
+                    newOutbound.outbounds = normalizedProxies.filter(p => validRefs.has(p));
                 }
 
                 // Validate providers references

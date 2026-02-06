@@ -78,6 +78,7 @@ export function createApp(bindings = {}) {
             const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
             const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
+            const nodeNamePrefix = c.req.query('node_name_prefix') || c.req.query('name_prefix') || '';
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
@@ -105,6 +106,7 @@ export function createApp(bindings = {}) {
                 baseConfig,
                 lang,
                 ua,
+                nodeNamePrefix,
                 groupByCountry,
                 enableClashUI,
                 externalController,
@@ -128,6 +130,7 @@ export function createApp(bindings = {}) {
             const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
             const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
+            const nodeNamePrefix = c.req.query('node_name_prefix') || c.req.query('name_prefix') || '';
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const enableClashUI = parseBooleanFlag(c.req.query('enable_clash_ui'));
             const externalController = c.req.query('external_controller');
@@ -148,6 +151,7 @@ export function createApp(bindings = {}) {
                 baseConfig,
                 lang,
                 ua,
+                nodeNamePrefix,
                 groupByCountry,
                 enableClashUI,
                 externalController,
@@ -172,6 +176,7 @@ export function createApp(bindings = {}) {
             const selectedRules = parseSelectedRules(c.req.query('selectedRules'));
             const customRules = parseJsonArray(c.req.query('customRules'));
             const ua = c.req.query('ua') || DEFAULT_USER_AGENT;
+            const nodeNamePrefix = c.req.query('node_name_prefix') || c.req.query('name_prefix') || '';
             const groupByCountry = parseBooleanFlag(c.req.query('group_by_country'));
             const configId = c.req.query('configId');
             const lang = c.get('lang');
@@ -189,6 +194,7 @@ export function createApp(bindings = {}) {
                 baseConfig,
                 lang,
                 ua,
+                nodeNamePrefix,
                 groupByCountry
             );
             builder.setSubscriptionUrl(c.req.url);
